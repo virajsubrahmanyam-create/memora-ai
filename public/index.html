@@ -76,6 +76,7 @@
       margin-bottom: 15px;
       max-width: 80%;
       line-height: 1.5;
+      white-space: pre-wrap;
     }
 
     .bot {
@@ -118,6 +119,11 @@
       background: #1d4ed8;
     }
 
+    .input-area button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
     .memory-content {
       padding: 20px;
     }
@@ -148,6 +154,32 @@
       font-size: 13px;
     }
 
+    .memory-list {
+      margin-top: 15px;
+    }
+
+    .memory-result {
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #0f172a;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .memory-title {
+      color: #60a5fa;
+      font-size: 12px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .thinking {
+      opacity: 0.7;
+      font-style: italic;
+    }
+
     @media (max-width: 800px) {
       .container {
         grid-template-columns: 1fr;
@@ -160,6 +192,7 @@
 
   <header class="header">
     <div class="logo">MEMORA AI</div>
+
     <div class="subtitle">
       Persistent-Memory Customer Support Agent
     </div>
@@ -179,27 +212,21 @@
           Hello! I'm MEMORA. How can I help you today?
         </div>
 
-        <div class="message user">
-          My payment failed while upgrading to Pro. I'm using Android.
-        </div>
-
-        <div class="message bot">
-          I can help you troubleshoot that. I'll remember the useful
-          details from this interaction for future support.
-        </div>
-
       </div>
 
       <div class="input-area">
+
         <input
           type="text"
           id="messageInput"
           placeholder="Type your message..."
+          onkeydown="handleKey(event)"
         >
 
-        <button onclick="sendMessage()">
+        <button id="sendButton" onclick="sendMessage()">
           Send
         </button>
+
       </div>
 
     </section>
@@ -213,32 +240,23 @@
       <div class="memory-content">
 
         <div class="memory-item">
-          <div class="memory-label">CUSTOMER</div>
-          <div class="memory-value">Rahul</div>
+          <div class="memory-label">MEMORY SYSTEM</div>
+          <div class="memory-value">Hindsight</div>
         </div>
 
         <div class="memory-item">
-          <div class="memory-label">PREVIOUS ISSUE</div>
-          <div class="memory-value">Payment failure</div>
+          <div class="memory-label">MEMORY BANK</div>
+          <div class="memory-value">memora-support</div>
         </div>
 
-        <div class="memory-item">
-          <div class="memory-label">DEVICE</div>
-          <div class="memory-value">Android</div>
+        <div class="status" id="memoryStatus">
+          ✓ Hindsight memory connected
         </div>
 
-        <div class="memory-item">
-          <div class="memory-label">PRODUCT</div>
-          <div class="memory-value">Pro upgrade</div>
-        </div>
-
-        <div class="memory-item">
-          <div class="memory-label">PREVIOUS SOLUTION</div>
-          <div class="memory-value">Web checkout</div>
-        </div>
-
-        <div class="status">
-          ✓ Memory available for future conversations
+        <div class="memory-list" id="memoryList">
+          <div class="memory-result">
+            Previous relevant memories will appear here.
+          </div>
         </div>
 
       </div>
@@ -248,39 +266,170 @@
   </main>
 
   <script>
-    function sendMessage() {
 
-      const input = document.getElementById("messageInput");
-      const messages = document.getElementById("messages");
+    const input = document.getElementById("messageInput");
+    const messages = document.getElementById("messages");
+    const sendButton = document.getElementById("sendButton");
+    const memoryList = document.getElementById("memoryList");
+    const memoryStatus = document.getElementById("memoryStatus");
+
+    function addMessage(text, type) {
+
+      const message = document.createElement("div");
+
+      message.className = "message " + type;
+
+      message.textContent = text;
+
+      messages.appendChild(message);
+
+      messages.scrollTop = messages.scrollHeight;
+
+      return message;
+    }
+
+    function handleKey(event) {
+
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+
+    }
+
+    async function sendMessage() {
 
       const text = input.value.trim();
 
-      if (text === "") {
+      if (!text) {
         return;
       }
 
-      const userMessage = document.createElement("div");
-      userMessage.className = "message user";
-      userMessage.textContent = text;
-
-      messages.appendChild(userMessage);
+      // Show customer message
+      addMessage(text, "user");
 
       input.value = "";
 
-      setTimeout(() => {
+      sendButton.disabled = true;
+      sendButton.textContent = "Thinking...";
 
-        const botMessage = document.createElement("div");
-        botMessage.className = "message bot";
+      // Temporary thinking message
+      const thinkingMessage = addMessage(
+        "MEMORA is checking previous customer memories...",
+        "bot"
+      );
 
-        botMessage.textContent =
-          "I understand. I'm checking my previous customer memories to provide a personalized response.";
+      thinkingMessage.classList.add("thinking");
 
-        messages.appendChild(botMessage);
+      try {
 
-        messages.scrollTop = messages.scrollHeight;
+        const response = await fetch("/api/chat", {
 
-      }, 600);
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            message: text
+          })
+
+        });
+
+        const data = await response.json();
+
+        // Remove thinking message
+        thinkingMessage.remove();
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.error || "Something went wrong"
+          );
+
+        }
+
+        // Show real MEMORA response
+        addMessage(
+          data.reply,
+          "bot"
+        );
+
+        // Show recalled Hindsight memories
+        displayMemories(data.memories);
+
+        memoryStatus.textContent =
+          "✓ Memory recalled and conversation saved";
+
+      } catch (error) {
+
+        thinkingMessage.remove();
+
+        addMessage(
+          "Sorry, I couldn't connect to my memory system right now.",
+          "bot"
+        );
+
+        memoryStatus.textContent =
+          "⚠ Memory connection error";
+
+        console.error(error);
+
+      } finally {
+
+        sendButton.disabled = false;
+        sendButton.textContent = "Send";
+
+        input.focus();
+
+      }
+
     }
+
+    function displayMemories(memories) {
+
+      memoryList.innerHTML = "";
+
+      if (!memories || memories.length === 0) {
+
+        memoryList.innerHTML = `
+          <div class="memory-result">
+            No previous relevant memories found.
+          </div>
+        `;
+
+        return;
+      }
+
+      memories.forEach((memory, index) => {
+
+        const item = document.createElement("div");
+
+        item.className = "memory-result";
+
+        item.innerHTML = `
+          <div class="memory-title">
+            RECALL ${index + 1}
+          </div>
+          <div>${escapeHtml(memory.text || "Memory found")}</div>
+        `;
+
+        memoryList.appendChild(item);
+
+      });
+
+    }
+
+    function escapeHtml(text) {
+
+      const div = document.createElement("div");
+
+      div.textContent = text;
+
+      return div.innerHTML;
+
+    }
+
   </script>
 
 </body>
