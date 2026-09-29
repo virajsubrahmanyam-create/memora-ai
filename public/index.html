@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEMORA AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .header {
+      padding: 20px 30px;
+      border-bottom: 1px solid #334155;
+      background: #111827;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-top: 5px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      padding: 25px;
+      max-width: 1300px;
+      margin: auto;
+    }
+
+    .chat-box,
+    .memory-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 15px;
+    }
+
+    .chat-box {
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header,
+    .memory-header {
+      padding: 18px;
+      border-bottom: 1px solid #334155;
+      font-weight: bold;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .message {
+      padding: 12px 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+
+    .bot {
+      background: #334155;
+    }
+
+    .user {
+      background: #2563eb;
+      margin-left: auto;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      border-top: 1px solid #334155;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: white;
+      outline: none;
+    }
+
+    .input-area button {
+      padding: 14px 22px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .input-area button:hover {
+      background: #1d4ed8;
+    }
+
+    .memory-content {
+      padding: 20px;
+    }
+
+    .memory-item {
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #0f172a;
+      border-radius: 10px;
+    }
+
+    .memory-label {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .memory-value {
+      font-size: 14px;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #064e3b;
+      color: #a7f3d0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="logo">MEMORA AI</div>
+    <div class="subtitle">
+      Persistent-Memory Customer Support Agent
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="chat-box">
+
+      <div class="chat-header">
+        Customer Support
+      </div>
+
+      <div class="messages" id="messages">
+
+        <div class="message bot">
+          Hello! I'm MEMORA. How can I help you today?
+        </div>
+
+        <div class="message user">
+          My payment failed while upgrading to Pro. I'm using Android.
+        </div>
+
+        <div class="message bot">
+          I can help you troubleshoot that. I'll remember the useful
+          details from this interaction for future support.
+        </div>
+
+      </div>
+
+      <div class="input-area">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message..."
+        >
+
+        <button onclick="sendMessage()">
+          Send
+        </button>
+      </div>
+
+    </section>
+
+    <aside class="memory-box">
+
+      <div class="memory-header">
+        🧠 Hindsight Memory
+      </div>
+
+      <div class="memory-content">
+
+        <div class="memory-item">
+          <div class="memory-label">CUSTOMER</div>
+          <div class="memory-value">Rahul</div>
+        </div>
+
+        <div class="memory-item">
+          <div class="memory-label">PREVIOUS ISSUE</div>
+          <div class="memory-value">Payment failure</div>
+        </div>
+
+        <div class="memory-item">
+          <div class="memory-label">DEVICE</div>
+          <div class="memory-value">Android</div>
+        </div>
+
+        <div class="memory-item">
+          <div class="memory-label">PRODUCT</div>
+          <div class="memory-value">Pro upgrade</div>
+        </div>
+
+        <div class="memory-item">
+          <div class="memory-label">PREVIOUS SOLUTION</div>
+          <div class="memory-value">Web checkout</div>
+        </div>
+
+        <div class="status">
+          ✓ Memory available for future conversations
+        </div>
+
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script>
+    function sendMessage() {
+
+      const input = document.getElementById("messageInput");
+      const messages = document.getElementById("messages");
+
+      const text = input.value.trim();
+
+      if (text === "") {
+        return;
+      }
+
+      const userMessage = document.createElement("div");
+      userMessage.className = "message user";
+      userMessage.textContent = text;
+
+      messages.appendChild(userMessage);
+
+      input.value = "";
+
+      setTimeout(() => {
+
+        const botMessage = document.createElement("div");
+        botMessage.className = "message bot";
+
+        botMessage.textContent =
+          "I understand. I'm checking my previous customer memories to provide a personalized response.";
+
+        messages.appendChild(botMessage);
+
+        messages.scrollTop = messages.scrollHeight;
+
+      }, 600);
+    }
+  </script>
+
+</body>
+</html>

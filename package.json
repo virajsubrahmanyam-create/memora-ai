@@ -1,0 +1,17 @@
+{
+  "name": "memora-ai",
+  "version": "1.0.0",
+  "description": "MEMORA - A persistent-memory AI customer support agent powered by Hindsight.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1"
+  }
+}
